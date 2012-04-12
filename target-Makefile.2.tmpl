@@ -1,0 +1,62 @@
+FONTNAME_BASE:=	%%FONTNAME_BASE%%
+FAMILY:=	%%FAMILY%%
+MODULES_KANA:=	%%MODULES_KANA%%
+MODULES_LATIN:=	%%MODULES_LATIN%%
+ALTERNATIVE_BASE:=	%%ALTERNATIVE_BASE%%
+MODULES_ALT:=	%%MODULES_ALT%%
+ifdef MPLUS_FULLSET
+MODULES= $(MODULES_KANA) $(MODULES_ALT) $(MODULES_LATIN) kanji
+else 
+MODULES= $(MODULES_KANA) $(MODULES_ALT) $(MODULES_LATIN) 
+endif
+
+WEIGHT:=	%%WEIGHT%%
+
+SCRIPTS=	set_bearings set_kernings set_fontnames set_ligatures set_vert_chars set_instructions set_ccmp
+SCRIPTS+=	ligature01.fea ccmp01.fea ccmp02.fea mark01.fea mplus.sfd
+
+${FONTNAME_BASE}-${WEIGHT}.ttf: build-ttf.pe $(SCRIPTS)
+	fontforge build-ttf.pe $@ $(MODULES)
+
+set_bearings: $(wildcard ../../../../svg.d/*/bearings)
+	perl ../../../../scripts/split-bearing.pl ${WEIGHT} $(MODULES) > $@
+
+set_kernings: $(wildcard ../../../../svg.d/*/kernings)
+	perl ../../../../scripts/split-kerning.pl ${WEIGHT} $(MODULES) > $@
+
+build-ttf.pe: ../../../../scripts/build-ttf.pe
+	ln -s ../../../../scripts/build-ttf.pe $@
+
+mplus.sfd: ../../../../scripts/mplus.sfd
+	ln -s ../../../../scripts/mplus.sfd $@
+
+set_ligatures: ../../../../scripts/set_ligatures
+	ln -s ../../../../scripts/set_ligatures $@
+
+set_vert_chars: $(wildcard ../../../../svg.d/*/vbearings)
+	perl ../../../../scripts/split-vbearing.pl ${WEIGHT} $(MODULES) > $@
+
+ligature01.fea: ../../../../scripts/ligature01.fea
+	ln -s ../../../../scripts/ligature01.fea $@
+
+set_instructions: ../../../../scripts/set_instructions
+	ln -s ../../../../scripts/set_instructions $@
+
+set_fontnames: ../../../../scripts/set_fontnames.tmpl
+	sed 's/%Fnbase%/${FONTNAME_BASE}/;s/%Family%/${FAMILY}/g;s/%Weight%/${WEIGHT}/g' ../../../../scripts/set_fontnames.tmpl > $@
+
+ccmp01.fea: ../../../../scripts/ccmp01.fea
+	ln -s ../../../../scripts/$@ $@
+
+ccmp02.fea: ../../../../scripts/ccmp02.fea
+	ln -s ../../../../scripts/$@ $@
+
+mark01.fea: $(wildcard ../../../../svg.d/*/anchors)
+	perl ../../../../scripts/split-anchors.pl ${WEIGHT} $(MODULES) > $@
+
+set_ccmp: ../../../../scripts/set_ccmp
+	ln -s ../../../../scripts/set_ccmp $@
+
+clean:
+	rm -f *~ *.ttf build-ttf.pe *.sfd
+	rm -f set_bearings set_kernings set_fontnames set_ligatures set_instructions set_ccmp *.fea
