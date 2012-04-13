@@ -103,20 +103,19 @@ weights_position = {'black': 0, 'heavy': 1, 'bold': 2,
 def set_bearings_line(line, charspaces):
     splitted = line.split()
     position = weights_position[weight] * 2
+    for s in splitted[1:]:
+        if not bearings_format.match(s):
+            raise Exception('format error: %s' % s)
     bearings = splitted[position + 1:position + 3]
     l, r = charspaces
     c = get_glyph_by_name(splitted[0])
     m = bearings_format.match(bearings[0])
-    if not m:
-        raise Exception('format error: %s' % bearings[0])
     bearing = int(m.group(2))
     if m.group(1) == '+':
         c.left_side_bearing = c.left_side_bearing + bearing
     else:
         c.left_side_bearing = bearing + l
     m = bearings_format.match(bearings[1])
-    if not m:
-        raise Exception('format error: %s' % bearings[1])
     bearing = int(m.group(2))
     if m.group(1) == '+':
         c.right_side_bearing = c.right_side_bearing + bearing
