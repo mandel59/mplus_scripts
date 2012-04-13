@@ -25,12 +25,22 @@ kanji_matrix = psMat.compose(
     psMat.translate(f.em / 2, f.ascent - f.em / 2)))
 
 svg_uni_name = re.compile('u[0-9A-F]{4,5}', re.IGNORECASE)
+feature_name = re.compile('([- 0-9a-zA-Z]{4})_(uni[0-9A-F]{4,5})')
 
+alt_glyphs = {}
 def svgname_to_glyphname(name):
     if svg_uni_name.match(name):
         return (int(name[1:], 16),)
-    else:
-        return (-1, name)
+    m = feature_name.match(name)
+    if m:
+        tag = m.group(1)
+        name = m.group(2)
+        tagged_name = "%s.%s" % (name, tag)
+        if not alt_glyphs.has_key(tag):
+            alt_glyphs[tag] = []
+        alt_glyphs[tag].append((name, tagged_name))
+        return (-1, tagged_name)
+    return (-1, name)
 
 def import_svg(svgpath, svgfile):
     name, ext = os.path.splitext(os.path.basename(svgfile))
@@ -250,6 +260,12 @@ f.addLookup('kana semi-voiced lookup', 'gsub_ligature', (), (
     ("liga", (("kana", ("JAN ", "dflt")),))))
 f.addLookupSubtable('kana semi-voiced lookup', 'kana semi-voiced table')
 
+f.addLookup('jis2004', 'gsub_single', (), (
+    ("jp04", (("latn", ("dflt",)), ("grek", ("dflt",)),
+              ("cyrl", ("dflt",)), ("kana", ("dflt", "JAN ")),
+              ("hani", ("dflt",))),),))
+f.addLookupSubtable('jis2004', 'jp04table')
+
 # import SVG files in each module
 f.selection.none()
 for mod in modules:
@@ -347,6 +363,13 @@ def set_ccmp():
             print t
             print message
 
+def set_jp04():
+    if alt_glyphs.has_key('jp04'):
+        for names in alt_glyphs['jp04']:
+            name, tagged_name = names
+            c = get_glyph_by_name(name)
+            c.addPosSub('jp04table', tagged_name)
+
 f.selection.all()
 f.removeOverlap()
 f.round()
@@ -354,6 +377,8 @@ if modules[0] != 'kanji':
     merge_features()
     set_ccmp()
     # set_instructions()
+else:
+    set_jp04()
 set_fontnames()
 set_os2_value()
 

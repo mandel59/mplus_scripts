@@ -79,6 +79,8 @@ sub _map2ucs
 	    {
 		if ($code2 =~ m/^0x([[:xdigit:]]+)(u)?$/ and defined $2) {
 		    push @mapped, sprintf('u%04X', hex($1));
+		} elsif ($code2 =~ m/^0x([[:xdigit:]]+)(un)?$/ and defined $2) {
+		    push @mapped, sprintf('jp04_uni%04X', hex($1));
 		} else {
 		    $this->_maperror($code2);
 		}
