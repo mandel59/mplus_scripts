@@ -50,6 +50,7 @@ def import_svg(svgpath, svgfile):
     c = f.createChar(*glyphname)
     c.width = f.em
     c.vwidth = f.em
+    c.clear()
     c.importOutlines(os.path.join(svgpath, svgfile),
         ('removeoverlap', 'correctdir'))
     f.selection.select(('more',), c)
@@ -325,10 +326,10 @@ def set_os2_value():
         panose[3] = 2
     f.os2_panose = tuple(panose)
     f.os2_family_class = 2054
-    f.os2_winascent = 1075
-    f.os2_windescent = 320
-    f.hhea_ascent = 1075
-    f.hhea_descent = -320
+    f.os2_winascent_add = 1075
+    f.os2_windescent_add = 320
+    f.hhea_ascent_add = 1075
+    f.hhea_descent_add = -320
     f.hhea_linegap = 90
 
 def merge_features():
