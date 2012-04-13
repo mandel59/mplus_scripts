@@ -15,8 +15,8 @@ WEIGHT:=	%%WEIGHT%%
 SCRIPTS=	set_bearings set_kernings set_fontnames set_ligatures set_vert_chars set_instructions set_ccmp
 SCRIPTS+=	ligature01.fea ccmp01.fea ccmp02.fea mark01.fea mplus.sfd
 
-${FONTNAME_BASE}-${WEIGHT}.ttf: build-ttf.pe $(SCRIPTS)
-	fontforge build-ttf.pe $@ $(MODULES)
+${FONTNAME_BASE}-${WEIGHT}.ttf: build-ttf.py $(SCRIPTS)
+	fontforge -script build-ttf.py $@ $(MODULES)
 
 set_bearings: $(wildcard ../../../../svg.d/*/bearings)
 	perl ../../../../scripts/split-bearing.pl ${WEIGHT} $(MODULES) > $@
@@ -24,8 +24,8 @@ set_bearings: $(wildcard ../../../../svg.d/*/bearings)
 set_kernings: $(wildcard ../../../../svg.d/*/kernings)
 	perl ../../../../scripts/split-kerning.pl ${WEIGHT} $(MODULES) > $@
 
-build-ttf.pe: ../../../../scripts/build-ttf.pe
-	ln -s ../../../../scripts/build-ttf.pe $@
+build-ttf.py: ../../../../scripts/build-ttf.py
+	ln -s ../../../../scripts/build-ttf.py $@
 
 mplus.sfd: ../../../../scripts/mplus.sfd
 	ln -s ../../../../scripts/mplus.sfd $@
@@ -58,5 +58,5 @@ set_ccmp: ../../../../scripts/set_ccmp
 	ln -s ../../../../scripts/set_ccmp $@
 
 clean:
-	rm -f *~ *.ttf build-ttf.pe *.sfd
+	rm -f *~ *.ttf build-ttf.py *.sfd
 	rm -f set_bearings set_kernings set_fontnames set_ligatures set_instructions set_ccmp *.fea
