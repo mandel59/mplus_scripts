@@ -351,7 +351,6 @@ f.selection.all()
 f.removeOverlap()
 f.round()
 if modules[0] != 'kanji':
-    pass
     merge_features()
     set_ccmp()
     # set_instructions()
