@@ -177,6 +177,11 @@ def set_vbearings_line(line):
         sht = psMat.translate(int(x), int(y))
         n.transform(sht)
         n.width = f.em
+    alt_path = "../../../splitted/%s/%s/vert/u%04X.svg" % (
+        weight, mod, c.unicode)
+    if os.path.exists(alt_path):
+        n.clear()
+        n.importOutlines(alt_path, ('removeoverlap', 'correctdir'))
     c.addPosSub('j-vert', n.glyphname)
 
 def set_vert_chars(mod):
@@ -204,6 +209,11 @@ f.addLookup('gsubvert', 'gsub_single', ('ignore_ligatures'), (
               ("hani", ("dflt",))),),))
 f.addLookupSubtable('gsubvert', 'j-vert')
 
+f.addLookup('kana semi-voiced lookup', 'gsub_ligature', (), (
+    ("ccmp", (("kana", ("JAN ", "dflt")),)),
+    ("liga", (("kana", ("JAN ", "dflt")),))))
+f.addLookupSubtable('kana semi-voiced lookup', 'kana semi-voiced table')
+
 # import SVG files in each module
 f.selection.none()
 for mod in modules:
@@ -223,9 +233,11 @@ for mod in modules:
                 % (kfontname, weight, kfontname, weight))
     else:
         import_svgs(moddir)
-        set_bearings(mod)
-        # set_kernings(mod)
-        set_vert_chars(mod)
+
+for mod in modules:
+    set_bearings(mod)
+    # set_kernings(mod)
+    set_vert_chars(mod)
 
 def set_fontnames():
     family = 'M+ ' + fontname[6:]
@@ -267,13 +279,45 @@ def set_os2_value():
     f.hhea_descent = -320
     f.hhea_linegap = 90
 
+def merge_features():
+    f.mergeFeature('ligature01.fea')
+    f.mergeFeature('ccmp01.fea')
+    f.mergeFeature('ccmp02.fea')
+    f.mergeFeature('mark01.fea')
+
+def set_ccmp():
+    table = [
+        (0xE055, "uni304B_uni309A"),
+        (0xE056, "uni304D_uni309A"),
+        (0xE057, "uni304F_uni309A"),
+        (0xE058, "uni3051_uni309A"),
+        (0xE059, "uni3053_uni309A"),
+        (0xE205, "uni30AB_uni309A"),
+        (0xE206, "uni30AD_uni309A"),
+        (0xE207, "uni30AF_uni309A"),
+        (0xE208, "uni30B1_uni309A"),
+        (0xE209, "uni30B3_uni309A"),
+        (0xE20D, "uni30BB_uni309A"),
+        (0xE211, "uni30C4_uni309A"),
+        (0xE213, "uni30C8_uni309A"),
+        (0xE29B, "uni31F7_uni309A")]
+    for t in table:
+        try:
+            c = f[t[0]]
+            c.unicode = -1
+            c.glyphname = t[1]
+            c.addPosSub('kana semi-voiced table', tuple(t[1].split('_')))
+        except Exception, message:
+            print t
+            print message
+
 f.selection.all()
 f.removeOverlap()
 f.round()
 if modules[0] != 'kanji':
     pass
-    # set_ligatures()
-    # set_ccmp()
+    merge_features()
+    set_ccmp()
     # set_instructions()
 set_fontnames()
 set_os2_value()
