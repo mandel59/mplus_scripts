@@ -202,12 +202,48 @@ def set_vert_chars(mod):
                 print message
         fp.close()
 
+def set_kernings_line(line):
+    splitted = line.split()
+    first, second = splitted[0][1:-1].split('][', 1)
+    first = first.replace(
+        '\\[', '[').replace('\\]', ']').replace('\\\\', '\\')
+    second = second.replace(
+        '\\[', '[').replace('\\]', ']').replace('\\\\', '\\')
+    kerns = int(splitted[1:][weights_position[weight]])
+    for l in first:
+        cl = get_glyph_by_name(l)
+        for r in second:
+          cr = get_glyph_by_name(r)
+          cl.addPosSub('kp', cr.glyphname, kerns)
+
+def set_kernings(mod):
+    kernings_path = "../../../../svg.d/%s/kernings" % mod
+    if os.path.exists(kernings_path):
+        fp = open(kernings_path, 'r')
+        line_count = 0
+        for line in fp:
+            line_count = line_count + 1
+            if bearings_comment.match(line):
+                continue
+            if bearings_space.match(line):
+                continue
+            try:
+                set_kernings_line(line)
+            except Exception, message:
+                print kernings_path, "line:", line_count
+                print message
+        fp.close()
+
 # add lookups
 f.addLookup('gsubvert', 'gsub_single', ('ignore_ligatures'), (
     ("vert", (("latn", ("dflt",)), ("grek", ("dflt",)),
               ("cyrl", ("dflt",)), ("kana", ("dflt", "JAN ")),
               ("hani", ("dflt",))),),))
 f.addLookupSubtable('gsubvert', 'j-vert')
+
+f.addLookup('kerning pairs', 'gpos_pair', (), (
+    ("kern", (("latn", ("dflt",)),)),))
+f.addLookupSubtable('kerning pairs', 'kp')
 
 f.addLookup('kana semi-voiced lookup', 'gsub_ligature', (), (
     ("ccmp", (("kana", ("JAN ", "dflt")),)),
@@ -236,7 +272,7 @@ for mod in modules:
 
 for mod in modules:
     set_bearings(mod)
-    # set_kernings(mod)
+    set_kernings(mod)
     set_vert_chars(mod)
 
 def set_fontnames():
