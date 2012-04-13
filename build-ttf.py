@@ -332,10 +332,11 @@ def set_os2_value():
     f.hhea_linegap = 90
 
 def merge_features():
-    f.mergeFeature('ligature01.fea')
+    if fontname[7] != 'm':
+        f.mergeFeature('ligature01.fea')
+        f.mergeFeature('mark01.fea')
     f.mergeFeature('ccmp01.fea')
     f.mergeFeature('ccmp02.fea')
-    f.mergeFeature('mark01.fea')
 
 def set_ccmp():
     table = [
