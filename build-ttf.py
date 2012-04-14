@@ -11,18 +11,15 @@ year = "2012"
 version = "1.048"
 modules = sys.argv[2:]
 
-# create font
-f = fontforge.open('mplus.sfd')
-f.encoding = 'unicode4'
-f.hasvmetrics = True
-f.ascent = 860
-f.descent = 140
+ascent = 860
+descent = 140
+em = ascent + descent
 
 kanji_scale = 0.98
 kanji_matrix = psMat.compose(
-    psMat.translate(-f.em / 2, -f.ascent + f.em / 2), psMat.compose(
+    psMat.translate(-em / 2, -ascent + em / 2), psMat.compose(
     psMat.scale(kanji_scale),
-    psMat.translate(f.em / 2, f.ascent - f.em / 2)))
+    psMat.translate(em / 2, ascent - em / 2)))
 
 svg_uni_name = re.compile('u[0-9A-F]{4,5}', re.IGNORECASE)
 feature_name = re.compile('([- 0-9a-zA-Z]{4})_(uni[0-9A-F]{4,5})')
@@ -36,7 +33,7 @@ def svgname_to_glyphname(name):
         tag = m.group(1)
         name = m.group(2)
         tagged_name = "%s.%s" % (name, tag)
-        if not alt_glyphs.has_key(tag):
+        if not (tag in alt_glyphs):
             alt_glyphs[tag] = []
         alt_glyphs[tag].append((name, tagged_name))
         return (-1, tagged_name)
@@ -48,8 +45,8 @@ def import_svg(svgpath, svgfile):
         raise Exception('%s is not SVG file' % os.path.join(svgpath, svgfile))
     glyphname = svgname_to_glyphname(name)
     c = f.createChar(*glyphname)
-    c.width = f.em
-    c.vwidth = f.em
+    c.width = em
+    c.vwidth = em
     c.clear()
     c.importOutlines(os.path.join(svgpath, svgfile),
         ('removeoverlap', 'correctdir'))
@@ -66,7 +63,7 @@ def import_kanji(moddir):
     for svgdir in os.listdir(moddir):
         import_svgs(os.path.join(moddir, svgdir))
 
-glyph_name = re.compile(r'(u|uni)?([0-9A-F]{4,5})')
+glyph_name = re.compile(r'^(u|uni)?([0-9A-F]{4,5})$')
 def get_glyph_by_name(name):
     if len(name) == 1:
         return f[ord(name)]
@@ -75,8 +72,8 @@ def get_glyph_by_name(name):
             c = f[ord(' ')]
         except Exception:
             c = f.createChar(ord(' '))
-            c.width = f.em
-            c.vwidth = f.em
+            c.width = em
+            c.vwidth = em
         return c
     m = glyph_name.match(name)
     if m:
@@ -89,8 +86,8 @@ def get_glyph_by_name(name):
             c = f[name]
         except Exception:
             c = f.createChar(-1, name)
-            c.width = f.em
-            c.vwidth = f.em
+            c.width = em
+            c.vwidth = em
     return c
 
 charspaces_comment = re.compile(r'^#')
@@ -164,35 +161,39 @@ def set_vbearings_line(line):
     c = get_glyph_by_name(ch)
     f.selection.select(c)
     f.copy()
-    n = f.createChar(-1, c.glyphname + '.vert')
-    n.width = f.em
-    n.vwidth = f.em
+    tag = 'vert'
+    name = c.glyphname
+    tagged_name = "%s.%s" % (name, tag)
+    n = get_glyph_by_name(tagged_name)
     f.selection.select(n)
-    f.paste()
-    if method.find('R') >= 0:
-        rot = psMat.compose(
-            psMat.translate(-f.em / 2, -f.ascent + f.em / 2),
-            psMat.compose(psMat.rotate(-math.pi / 2),
-            psMat.translate(f.em / 2, f.ascent - f.em / 2)))
-        n.transform(rot)
-        if method.find('F') >= 0:
-            flip = psMat.compose(
-                psMat.translate(-f.em / 2, -f.ascent + f.em / 2),
-                psMat.compose(psMat.scale(-1, 1),
-                psMat.translate(f.em / 2, f.ascent - f.em / 2)))
-            n.transform(flip)
-    elif method == 'S':
-        position = weights_position[weight] * 2
-        x, y = h2v_shift[position:position + 2]
-        sht = psMat.translate(int(x), int(y))
-        n.transform(sht)
-        n.width = f.em
     alt_path = "../../../splitted/%s/%s/vert/u%04X.svg" % (
         weight, mod, c.unicode)
     if os.path.exists(alt_path):
         n.clear()
         n.importOutlines(alt_path, ('removeoverlap', 'correctdir'))
-    c.addPosSub('j-vert', n.glyphname)
+    else:
+        f.paste()
+        if method.find('R') >= 0:
+            rot = psMat.compose(
+                psMat.translate(-em / 2, -ascent + em / 2),
+                psMat.compose(psMat.rotate(-math.pi / 2),
+                psMat.translate(em / 2, ascent - em / 2)))
+            n.transform(rot)
+            if method.find('F') >= 0:
+                flip = psMat.compose(
+                    psMat.translate(-em / 2, -ascent + em / 2),
+                    psMat.compose(psMat.scale(-1, 1),
+                    psMat.translate(em / 2, ascent - em / 2)))
+                n.transform(flip)
+        elif method == 'S':
+            position = weights_position[weight] * 2
+            x, y = h2v_shift[position:position + 2]
+            sht = psMat.translate(int(x), int(y))
+            n.transform(sht)
+            n.width = em
+    if not (tag in alt_glyphs):
+        alt_glyphs[tag] = []
+    alt_glyphs[tag].append((name, tagged_name))
 
 def set_vert_chars(mod):
     vbearings_path = "../../../../svg.d/%s/vbearings" % mod
@@ -223,8 +224,8 @@ def set_kernings_line(line):
     for l in first:
         cl = get_glyph_by_name(l)
         for r in second:
-          cr = get_glyph_by_name(r)
-          cl.addPosSub('kp', cr.glyphname, kerns)
+            cr = get_glyph_by_name(r)
+            cl.addPosSub('kp', cr.glyphname, kerns)
 
 def set_kernings(mod):
     kernings_path = "../../../../svg.d/%s/kernings" % mod
@@ -243,53 +244,6 @@ def set_kernings(mod):
                 print kernings_path, "line:", line_count
                 print message
         fp.close()
-
-# add lookups
-f.addLookup('gsubvert', 'gsub_single', ('ignore_ligatures'), (
-    ("vert", (("latn", ("dflt",)), ("grek", ("dflt",)),
-              ("cyrl", ("dflt",)), ("kana", ("dflt", "JAN ")),
-              ("hani", ("dflt",))),),))
-f.addLookupSubtable('gsubvert', 'j-vert')
-
-f.addLookup('kerning pairs', 'gpos_pair', (), (
-    ("kern", (("latn", ("dflt",)),)),))
-f.addLookupSubtable('kerning pairs', 'kp')
-
-f.addLookup('kana semi-voiced lookup', 'gsub_ligature', (), (
-    ("ccmp", (("kana", ("JAN ", "dflt")),)),
-    ("liga", (("kana", ("JAN ", "dflt")),))))
-f.addLookupSubtable('kana semi-voiced lookup', 'kana semi-voiced table')
-
-f.addLookup('jis2004', 'gsub_single', (), (
-    ("jp04", (("latn", ("dflt",)), ("grek", ("dflt",)),
-              ("cyrl", ("dflt",)), ("kana", ("dflt", "JAN ")),
-              ("hani", ("dflt",))),),))
-f.addLookupSubtable('jis2004', 'jp04table')
-
-# import SVG files in each module
-f.selection.none()
-for mod in modules:
-    moddir = '../../../splitted/%s/%s' % (weight, mod)
-    if mod == 'kanji':
-        kfontname = fontname[:7]
-        if modules[0] == 'kanji':
-            glyphs = import_kanji(moddir)
-            if kfontname == 'mplus-2':
-                f.transform(kanji_matrix)
-            for code in f.selection:
-                c = f[code]
-                c.width = f.em
-                c.vwidth = f.em
-        else:
-            f.mergeFonts('../../%sk/%s/%sk-%s.ttf'
-                % (kfontname, weight, kfontname, weight))
-    else:
-        import_svgs(moddir)
-
-for mod in modules:
-    set_bearings(mod)
-    set_kernings(mod)
-    set_vert_chars(mod)
 
 def set_fontnames():
     family = 'M+ ' + fontname[6:]
@@ -364,22 +318,83 @@ def set_ccmp():
             print t
             print message
 
-def set_jp04():
-    if alt_glyphs.has_key('jp04'):
-        for names in alt_glyphs['jp04']:
+def set_alt_tables():
+    tag_table = {
+        'jp04': 'jp04table',
+        'vert': 'j-vert'
+    }
+    for tag in alt_glyphs:
+        for names in alt_glyphs[tag]:
             name, tagged_name = names
             c = get_glyph_by_name(name)
-            c.addPosSub('jp04table', tagged_name)
+            c.addPosSub(tag_table[tag], tagged_name)
+
+# create font
+f = fontforge.open('mplus.sfd')
+f.encoding = 'unicode4'
+f.hasvmetrics = True
+ascent = ascent
+f.descent = descent
+
+kanji_flag = False
+if 'kanji' in modules:
+    kfontname = fontname[:7]
+    if modules[0] == 'kanji':
+        kanji_flag = True
+        moddir = '../../../splitted/%s/%s' % (weight, 'kanji')
+        glyphs = import_kanji(moddir)
+        if kfontname == 'mplus-2':
+            f.transform(kanji_matrix)
+        for code in f.selection:
+            c = f[code]
+            c.width = em
+            c.vwidth = em
+    else:
+        f.close()
+        f = fontforge.open('../../%sk/%s/%sk-%s.ttf'
+            % (kfontname, weight, kfontname, weight))
+    modules.remove('kanji')
+
+
+# import SVG files in each module
+f.selection.none()
+for mod in modules:
+    moddir = '../../../splitted/%s/%s' % (weight, mod)
+    import_svgs(moddir)
 
 f.selection.all()
 f.removeOverlap()
 f.round()
-if modules[0] != 'kanji':
+
+# add lookups
+if kanji_flag:
+    f.addLookup('jis2004', 'gsub_single', (), (
+        ("jp04", (("latn", ("dflt",)), ("grek", ("dflt",)),
+                  ("cyrl", ("dflt",)), ("kana", ("dflt", "JAN ")),
+                  ("hani", ("dflt",))),),))
+    f.addLookupSubtable('jis2004', 'jp04table')
+else:
+    f.addLookup('gsubvert', 'gsub_single', (), (
+        ("vert", (("latn", ("dflt",)), ("grek", ("dflt",)),
+                  ("cyrl", ("dflt",)), ("kana", ("dflt", "JAN ")),
+                  ("hani", ("dflt",))),),))
+    f.addLookupSubtable('gsubvert', 'j-vert')
+    f.addLookup('kerning pairs', 'gpos_pair', (), (
+        ("kern", (("latn", ("dflt",)),)),))
+    f.addLookupSubtable('kerning pairs', 'kp')
+    f.addLookup('kana semi-voiced lookup', 'gsub_ligature', (), (
+        ("ccmp", (("kana", ("JAN ", "dflt")),)),
+        ("liga", (("kana", ("JAN ", "dflt")),))))
+    f.addLookupSubtable('kana semi-voiced lookup', 'kana semi-voiced table')
+    for mod in modules:
+        set_bearings(mod)
+        set_kernings(mod)
+        set_vert_chars(mod)
     merge_features()
     set_ccmp()
     # set_instructions()
-else:
-    set_jp04()
+
+set_alt_tables()
 set_fontnames()
 set_os2_value()
 
