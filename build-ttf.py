@@ -65,26 +65,27 @@ def import_kanji(moddir):
 
 glyph_name = re.compile(r'^(u|uni)?([0-9A-F]{4,5})$')
 def get_glyph_by_name(name):
-    if len(name) == 1:
+    if len(name) == 1 and ord(name) in f:
         return f[ord(name)]
     elif name == 'space':
-        try:
+        if ord(' ') in f:
             c = f[ord(' ')]
-        except Exception:
+        else:
             c = f.createChar(ord(' '))
             c.width = em
             c.vwidth = em
         return c
     m = glyph_name.match(name)
     if m:
-        try:
-            c = f[int(m.group(2), 16)]
-        except Exception:
-            c = f.createChar(int(m.group(2), 16))
+        ucode = int(m.group(2), 16)
+        if ucode in f:
+            c = f[ucode]
+        else:
+            c = f.createChar(ucode)
     else:
-        try:
+        if name in f:
             c = f[name]
-        except Exception:
+        else:
             c = f.createChar(-1, name)
             c.width = em
             c.vwidth = em
