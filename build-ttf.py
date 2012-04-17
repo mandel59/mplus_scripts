@@ -378,6 +378,35 @@ def set_kanji_aliases():
             f.selection.select(n)
             f.paste()
 
+def set_kanji_altuni():
+    kanjidir = '../../../../svg.d/kanji'
+    for subdir in os.listdir(kanjidir):
+        if subdir.upper().find('CVS') >= 0:
+            continue
+        altuni_path = os.path.join(kanjidir, subdir, 'altuni')
+        if os.path.exists(altuni_path):
+            fp = open(altuni_path, 'r')
+            line_count = 0
+            for line in fp:
+                line_count += 1
+                l = line.strip()
+                if len(l) == 0 or l[0] == '#':
+                    continue
+                splitted = line.split(None, 1)
+                name = splitted[0]
+                def hex2int(s):
+                    return int(s, 16)
+                alts = [tuple(map(hex2int, x.split()))
+                        for x in splitted[1].split(',')]
+                if name in f:
+                    try:
+                        f[name].altuni = tuple(alts)
+                    except Exception, message:
+                        print altuni_path, line_count
+                        print message
+                        print alts
+            fp.close()
+
 # create font
 f = fontforge.open('mplus.sfd')
 f.encoding = 'unicode4'
@@ -423,6 +452,7 @@ if kanji_flag:
                   ("hani", ("dflt",))),),))
     f.addLookupSubtable('jis2004', 'jp04table')
     set_kanji_aliases()
+    set_kanji_altuni()
 else:
     f.addLookup('gsubvert', 'gsub_single', (), (
         ("vert", (("latn", ("dflt",)), ("grek", ("dflt",)),
