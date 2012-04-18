@@ -1,5 +1,0 @@
-if ( (Strstr(_ttfname,"m-") == -1) && (Strstr(_ttfname,"mn-") == -1) \
-&& WorthOutputting("ff") && WorthOutputting("fi") && WorthOutputting("fl")\
-&& WorthOutputting("ffi") && WorthOutputting("ffl")) 
-	MergeFeature("ligature01.fea") 
-endif
