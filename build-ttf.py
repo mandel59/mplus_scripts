@@ -279,6 +279,7 @@ def set_os2_value():
     else:
         panose[3] = 2
     f.os2_panose = tuple(panose)
+    f.os2_vendor = 'M+  '
     f.os2_family_class = 2054
     f.os2_winascent_add = 0
     f.os2_windescent_add = 0
