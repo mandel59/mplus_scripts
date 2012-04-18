@@ -57,7 +57,7 @@ def import_svgs(svgdir):
         try:
             import_svg(svgdir, svgfile)
         except Exception, message:
-            print message
+            print(message)
 
 def import_kanji(moddir):
     for svgdir in os.listdir(moddir):
@@ -151,8 +151,8 @@ def set_bearings(mod):
             try:
                 set_bearings_line(line, charspaces)
             except Exception, message:
-                print bearings_path, "line:", line_count
-                print message
+                print(bearings_path, "line:", line_count)
+                print(message)
         fp.close()
 
 def set_vbearings_line(line):
@@ -210,8 +210,8 @@ def set_vert_chars(mod):
             try:
                 set_vbearings_line(line)
             except Exception, message:
-                print vbearings_path, "line:", line_count
-                print message
+                print(vbearings_path, "line:", line_count)
+                print(message)
         fp.close()
 
 def set_kernings_line(line):
@@ -242,8 +242,8 @@ def set_kernings(mod):
             try:
                 set_kernings_line(line)
             except Exception, message:
-                print kernings_path, "line:", line_count
-                print message
+                print(kernings_path, "line:", line_count)
+                print(message)
         fp.close()
 
 def set_fontnames():
@@ -321,8 +321,8 @@ def set_ccmp():
             c.glyphname = t[1]
             c.addPosSub('kana semi-voiced table', tuple(t[1].split('_')))
         except Exception, message:
-            print t
-            print message
+            print(t)
+            print(message)
 
 def set_alt_tables():
     tag_table = {
@@ -403,9 +403,9 @@ def set_kanji_altuni():
                     try:
                         f[name].altuni = tuple(alts)
                     except Exception, message:
-                        print altuni_path, line_count
-                        print message
-                        print alts
+                        print(altuni_path, line_count)
+                        print(message)
+                        print(alts)
             fp.close()
 
 # create font
