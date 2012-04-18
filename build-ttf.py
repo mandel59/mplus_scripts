@@ -56,7 +56,7 @@ def import_svgs(svgdir):
     for svgfile in os.listdir(svgdir):
         try:
             import_svg(svgdir, svgfile)
-        except Exception, message:
+        except Exception as message:
             print(message)
 
 def import_kanji(moddir):
@@ -150,7 +150,7 @@ def set_bearings(mod):
                 continue
             try:
                 set_bearings_line(line, charspaces)
-            except Exception, message:
+            except Exception as message:
                 print(bearings_path, "line:", line_count)
                 print(message)
         fp.close()
@@ -209,7 +209,7 @@ def set_vert_chars(mod):
                 continue
             try:
                 set_vbearings_line(line)
-            except Exception, message:
+            except Exception as message:
                 print(vbearings_path, "line:", line_count)
                 print(message)
         fp.close()
@@ -241,7 +241,7 @@ def set_kernings(mod):
                 continue
             try:
                 set_kernings_line(line)
-            except Exception, message:
+            except Exception as message:
                 print(kernings_path, "line:", line_count)
                 print(message)
         fp.close()
@@ -320,7 +320,7 @@ def set_ccmp():
             c.unicode = -1
             c.glyphname = t[1]
             c.addPosSub('kana semi-voiced table', tuple(t[1].split('_')))
-        except Exception, message:
+        except Exception as message:
             print(t)
             print(message)
 
@@ -402,7 +402,7 @@ def set_kanji_altuni():
                 if name in f:
                     try:
                         f[name].altuni = tuple(alts)
-                    except Exception, message:
+                    except Exception as message:
                         print(altuni_path, line_count)
                         print(message)
                         print(alts)
