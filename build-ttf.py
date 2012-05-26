@@ -57,7 +57,8 @@ def import_svgs(svgdir):
         try:
             import_svg(svgdir, svgfile)
         except Exception as message:
-            print(message)
+            #print(message)
+            pass
 
 def import_kanji(moddir):
     for svgdir in os.listdir(moddir):
