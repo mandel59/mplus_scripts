@@ -4,11 +4,10 @@ import os
 import re
 import psMat
 import fontforge
+import config
 
 ttfname = sys.argv[1]
 fontname, weight = os.path.splitext(ttfname)[0].rsplit('-', 1)
-year = "2012"
-version = "1.048"
 modules = sys.argv[2:]
 
 ascent = 860
@@ -254,19 +253,19 @@ def set_fontnames():
     else:
         subfamily = 'Regular'
     fullname = ("%s %s" % (family, weight))
-    copyright = "Copyright(c) %s M+ FONTS PROJECT" % year
+    copyright = "Copyright(c) %s M+ FONTS PROJECT" % config.year
     f.fontname = '%s-%s' % (fontname, weight)
     f.familyname = family
     f.fullname = fullname
     f.weight = weight
     f.copyright = copyright
-    f.version = version
+    f.version = config.version
     f.sfnt_names = (
         ('English (US)', 'Copyright', copyright),
         ('English (US)', 'Family', fullname),
         ('English (US)', 'SubFamily', subfamily),
         ('English (US)', 'Fullname', fullname),
-        ('English (US)', 'Version', 'Version %s' % version),
+        ('English (US)', 'Version', 'Version %s' % config.version),
         ('English (US)', 'PostScriptName', '%s-%s' % (fontname, weight)),
         ('English (US)', 'Vendor URL', 'http://mplus-fonts.sourceforge.jp'),
         ('English (US)', 'Preferred Family', family),
@@ -379,6 +378,66 @@ def set_kanji_aliases():
             n = get_glyph_by_name('uni%04X' % kangxi_code)
             f.selection.select(n)
             f.paste()
+    cjk_radicals = [
+        (0x2E81, 0x20086),
+        (0x2E83, 0x4E5A),
+        (0x2E85, 0x4EBB),
+        (0x2E89, 0x5202),
+        (0x2E8B, 0x353E),
+        (0x2E8E, 0x5140),
+        (0x2E8F, 0x5C23),
+        (0x2E90, 0x5C22),
+        (0x2E92, 0x5DF3),
+        (0x2E93, 0x5E7A),
+        (0x2E94, 0x5F51),
+        (0x2E96, 0x5FC4),
+        (0x2E97, 0x38FA),
+        (0x2E98, 0x624C),
+        (0x2E99, 0x6535),
+        (0x2E9B, 0x65E1),
+        (0x2E9E, 0x6B7A),
+        (0x2E9F, 0x6BCD),
+        (0x2EA0, 0x6C11),
+        (0x2EA1, 0x6C35),
+        (0x2EA2, 0x6C3A),
+        (0x2EA3, 0x706C),
+        (0x2EA5, 0x722B),
+        (0x2EA6, 0x4E2C),
+        (0x2EA8, 0x72AD),
+        (0x2EAB, 0x7F52),
+        (0x2EB2, 0x7F52),
+        (0x2EB3, 0x34C1),
+        (0x2EB9, 0x8002),
+        (0x2EBD, 0x26951),
+        (0x2EBE, 0x8279),
+        (0x2EBF, 0xFA5E),
+        (0x2EC0, 0xFA5D),
+        (0x2EC2, 0x8864),
+        (0x2EC3, 0x8980),
+        (0x2EC4, 0x897F),
+        (0x2ECC, 0xFA66),
+        (0x2ECD, 0x8FB6),
+        (0x2ED1, 0x9577),
+        (0x2ED2, 0x9578),
+        (0x2ED8, 0x9752),
+        (0x2EDE, 0x2967F),
+        (0x2EDF, 0x98E0),
+        (0x2EE8, 0x9EA6),
+        (0x2EE9, 0x9EC4),
+        (0x2EEB, 0x6589),
+        (0x2EED, 0x6B6F),
+        (0x2EEF, 0x7ADC),
+        (0x2EF2, 0x4E80),
+    ]
+    for i in cjk_radicals:
+        if i[0] in f:
+            continue
+        if i[1] in f:
+            f.selection.select(i[1])
+            f.copyReference()
+            n = get_glyph_by_name('uni%04X' % i[0])
+            f.selection.select(n)
+            f.paste()
 
 def set_kanji_altuni():
     kanjidir = '../../../../svg.d/kanji'
@@ -413,7 +472,7 @@ def set_kanji_altuni():
 f = fontforge.open('mplus.sfd')
 f.encoding = 'unicode4'
 f.hasvmetrics = True
-ascent = ascent
+f.ascent = ascent
 f.descent = descent
 
 kanji_flag = False
@@ -474,7 +533,7 @@ else:
         set_vert_chars(mod)
     merge_features()
     set_ccmp()
-    # set_instructions()
+    f.autoInstr()
 
 set_alt_tables()
 set_fontnames()
