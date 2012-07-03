@@ -490,7 +490,7 @@ if 'kanji' in modules:
             c.vwidth = em
     else:
         f.close()
-        f = fontforge.open('../../%sk/%s/%sk-%s.ttf'
+        f = fontforge.open('../../%sk/%s/%sk-%s.sfd'
             % (kfontname, weight, kfontname, weight))
     modules.remove('kanji')
 
@@ -539,4 +539,9 @@ set_alt_tables()
 set_fontnames()
 set_os2_value()
 
-f.generate(ttfname, '', ('short-post', 'opentype', 'PfEd-lookups'))
+if kanji_flag:
+    f.save('%sk-%s.sfd' % (kfontname, weight))
+    open(ttfname, 'w').close()
+else:
+    f.generate(ttfname, '', ('short-post', 'opentype', 'PfEd-lookups'))
+
