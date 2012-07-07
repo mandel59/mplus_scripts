@@ -191,7 +191,8 @@ def set_vbearings_line(line):
             x, y = h2v_shift[position:position + 2]
             sht = psMat.translate(int(x), int(y))
             n.transform(sht)
-            n.width = em
+    n.width = em
+    n.vwidth = em
     if not (tag in alt_glyphs):
         alt_glyphs[tag] = []
     alt_glyphs[tag].append((name, tagged_name))
