@@ -77,10 +77,16 @@ sub _map2ucs
 	    my @mapped;
 	    for my $code2 (split m/,/, $code)
 	    {
-		if ($code2 =~ m/^0x([[:xdigit:]]+)(u)?$/ and defined $2) {
+		if ($code2 =~ m/^0x([[:xdigit:]]+)u$/) {
 		    push @mapped, sprintf('u%04X', hex($1));
-		} elsif ($code2 =~ m/^0x([[:xdigit:]]+)(un)?$/ and defined $2) {
+		} elsif ($code2 =~ m/^aj([0-9]+)$/) {
+		    push @mapped, sprintf('aj%d', $1 + 0);
+		} elsif ($code2 =~ m/^uni([[:xdigit:]]+)_uni([[:xdigit:]]+)$/) {
+		    push @mapped, sprintf('uni%04X_uni%04X', hex($1), hex($2));
+		} elsif ($code2 =~ m/^0x([[:xdigit:]]+)un$/) {
 		    push @mapped, sprintf('jp04_uni%04X', hex($1));
+		} elsif ($code2 =~ m/^0x([[:xdigit:]]+)uf$/) {
+		    push @mapped, sprintf('fude_uni%04X', hex($1));
 		} else {
 		    $this->_maperror($code2);
 		}

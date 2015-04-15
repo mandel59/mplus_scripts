@@ -6,6 +6,8 @@ import psMat
 import fontforge
 import config
 
+fontforge.setPrefs('CoverageFormatsAllowed', 1)
+
 ttfname = sys.argv[1]
 fontname, weight = os.path.splitext(ttfname)[0].rsplit('-', 1)
 modules = sys.argv[2:]
@@ -20,8 +22,8 @@ kanji_matrix = psMat.compose(
     psMat.scale(kanji_scale),
     psMat.translate(em / 2, ascent - em / 2)))
 
-svg_uni_name = re.compile('u[0-9A-F]{4,5}', re.IGNORECASE)
-feature_name = re.compile('([- 0-9a-zA-Z]{4})_(uni[0-9A-F]{4,5})')
+svg_uni_name = re.compile('^u[0-9A-F]{4,5}$', re.IGNORECASE)
+feature_name = re.compile('^([- 0-9a-zA-Z]{4})_(uni[0-9A-F]{4,5})$')
 
 alt_glyphs = {}
 def svgname_to_glyphname(name):
@@ -269,7 +271,9 @@ def set_fontnames():
         ('English (US)', 'Version', 'Version %s' % config.version),
         ('English (US)', 'PostScriptName', '%s-%s' % (fontname, weight)),
         ('English (US)', 'Vendor URL', 'http://mplus-fonts.sourceforge.jp'),
+        ('Japanese', 'Preferred Family', family),
         ('English (US)', 'Preferred Family', family),
+        ('Japanese', 'Preferred Styles', weight),
         ('English (US)', 'Preferred Styles', weight),)
 
 def set_os2_value():
@@ -279,9 +283,13 @@ def set_os2_value():
         panose[3] = 3
     else:
         panose[3] = 2
+    if fontname[7] == 'm':
+        panose[3] = 9
+        f.os2_family_class = 8 * 256 + 9
+    else:
+        f.os2_family_class = 8 * 256 + 6
     f.os2_panose = tuple(panose)
     f.os2_vendor = 'M+  '
-    f.os2_family_class = 2054
     f.os2_winascent_add = 0
     f.os2_windescent_add = 0
     f.hhea_ascent_add = 0
@@ -330,7 +338,9 @@ def set_alt_tables():
         'jp04': 'jp04table',
         'vert': 'j-vert'
     }
-    for tag in alt_glyphs:
+    for tag in tag_table:
+        if not tag in alt_glyphs:
+            continue
         for names in alt_glyphs[tag]:
             name, tagged_name = names
             c = get_glyph_by_name(name)
@@ -369,9 +379,6 @@ def set_kanji_aliases():
     for i in range(0, len(kangxi_ucs)):
         kangxi_code = i + 0x2F00
         if kangxi_code in f:
-            if kangxi_code == 0x2F5B:
-                # KANGXI RADICAL FANG
-                alt_glyphs['jp04'].append(('uni7259', 'uni2F5B'))
             continue
         if kangxi_ucs[i] in f:
             f.selection.select(kangxi_ucs[i])
@@ -406,6 +413,7 @@ def set_kanji_aliases():
         (0x2EA6, 0x4E2C),
         (0x2EA8, 0x72AD),
         (0x2EAB, 0x7F52),
+        (0x2EAD, 0x793B),
         (0x2EB2, 0x7F52),
         (0x2EB3, 0x34C1),
         (0x2EB9, 0x8002),
@@ -416,6 +424,7 @@ def set_kanji_aliases():
         (0x2EC2, 0x8864),
         (0x2EC3, 0x8980),
         (0x2EC4, 0x897F),
+        (0x2ECA, 0x27FB7),
         (0x2ECC, 0xFA66),
         (0x2ECD, 0x8FB6),
         (0x2ED1, 0x9577),
@@ -517,16 +526,16 @@ if kanji_flag:
     set_kanji_altuni()
 else:
     f.addLookup('gsubvert', 'gsub_single', (), (
-        ("vert", (("latn", ("dflt",)), ("grek", ("dflt",)),
+        ("vert", (("DFLT", ("dflt",)), ("latn", ("dflt",)), ("grek", ("dflt",)),
                   ("cyrl", ("dflt",)), ("kana", ("dflt", "JAN ")),
                   ("hani", ("dflt",))),),))
     f.addLookupSubtable('gsubvert', 'j-vert')
     f.addLookup('kerning pairs', 'gpos_pair', (), (
-        ("kern", (("latn", ("dflt",)),)),))
+        ("kern", (("DFLT", ("dflt",)), ("latn", ("dflt",)),)),))
     f.addLookupSubtable('kerning pairs', 'kp')
     f.addLookup('kana semi-voiced lookup', 'gsub_ligature', (), (
-        ("ccmp", (("kana", ("JAN ", "dflt")),)),
-        ("liga", (("kana", ("JAN ", "dflt")),))))
+        ("ccmp", (("DFLT", ("dflt",)), ("kana", ("JAN ", "dflt")),)),
+        ("liga", (("DFLT", ("dflt",)), ("kana", ("JAN ", "dflt")),))))
     f.addLookupSubtable('kana semi-voiced lookup', 'kana semi-voiced table')
     for mod in modules:
         set_bearings(mod)
@@ -535,6 +544,7 @@ else:
     merge_features()
     set_ccmp()
     f.autoInstr()
+    f.hasvmetrics = True
 
 set_alt_tables()
 set_fontnames()

@@ -35,7 +35,7 @@ foreach my $arg (@ARGV) {
 		} elsif ( $1 eq 'markClass' ) {
 			my $tag = $2;
 			while (<ANCHORS>) {
-				last if ($_ eq "\@end\n");
+				last if ($_ =~ /^\@end\s*$/);
 				next if (/^#/ or /^\s*$/);
 				my ($name, @anchors) = split();
 				my ($x, $y) = ($anchors[$X], $anchors[$Y]);
@@ -44,7 +44,7 @@ foreach my $arg (@ARGV) {
 		} elsif ( $1 eq 'pos' ) {
 			my ($type, $tag) = split(/\s+/,$2,2);
 			while (<ANCHORS>) {
-				last if ($_ eq "\@end\n");
+				last if ($_ =~ /^\@end\s*$/);
 				next if (/^#/ or /^\s*$/);
 				my ($name, @anchors) = split();
 				my ($x, $y) = ($anchors[$X], $anchors[$Y]);

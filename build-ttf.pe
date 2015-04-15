@@ -1,5 +1,7 @@
 #!/usr/local/bin/fontforge -script
 
+SetPrefs("CoverageFormatsAllowed", 1)
+
 $trace = 0
 
 _kanji_scale_percentage = 98

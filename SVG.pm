@@ -83,13 +83,16 @@ sub clip {
     my ($weight, $unicode);
     my $region = undef;
     for (my $i = 0; $i <= $#{$this->{frames}}; $i++) {
-	my $reg = $this->{frames}->[$i];
-	if ($reg->[0] == $this->{cols}->[$col] && 
-	    $reg->[1] == $this->{rows}->[$row]) {
-	    $region = $reg;
-	    last;
-	}
+        my $reg = $this->{frames}->[$i];
+        if ($reg->[0] == $this->{cols}->[$col] && 
+            $reg->[1] == $this->{rows}->[$row]) {
+            $region = $reg;
+            last;
+        }
     }
+
+    $this->{svg} =~ s/<rect\b[^<>]*?fill\s*=\s*\"none\".*?>//sg;
+
     $this->{svg} =~ s/<\s*path\s/<PATH /g;
     while ($this->{svg} =~ s/(<\s*PATH\b[^>]*>)/_select_path($1,$region,$blshift)/se) {
 	;
@@ -98,12 +101,15 @@ sub clip {
     while ($this->{svg} =~ s/(<\s*POLYGON\b[^>]*>)/_select_poly($1,$region,$blshift)/se) {
 	;
     }
-    $this->{svg} =~ s/<\s*rect\s([^>l]*\/>)/<RECT $1/g; 	# without 'fill="none"'
+    $this->{svg} =~ s/<\s*rect\s([^>]*\/>)/<RECT $1/g; 	# without 'fill="none"'
     while ($this->{svg} =~ s/(<\s*RECT\b[^>]*>)/_select_rect($1,$region,$blshift)/se) {
 	;
     }
+    $this->{svg} =~ s/<\s*circle\s([^>]*\/>)/<CIRCLE $1/g;
+    while ($this->{svg} =~ s/(<\s*CIRCLE\b[^>]*>)/_select_circle($1,$region,$blshift)/se) {
+    ;
+    }
     $this->{svg} = _set_region($this->{svg}, $region->[2], $region->[3]);
-    $this->{svg} =~ s/<rect\b[^<>]*?fill\s*=\s*\"none\".*?>//sg;
 
     return $this;
 }
@@ -221,7 +227,7 @@ sub _get_property {
     }
 }
 
-# frame (�ɤ�Ĥ֤��Τʤ� rect) �ΰ��������
+# frame (ÅÉ¤ê¤Ä¤Ö¤·¤Î¤Ê¤¤ rect) ¤Î°ìÍ÷¤ò³ÍÆÀ
 sub _get_frames {
     my @rectangles;
     my $svg = $_[0];
@@ -234,7 +240,7 @@ sub _get_frames {
 		     _get_property($rect, "height"));
 	push(@rectangles, \@array);
     }
-    # ���񤭽�˥�����
+    # ²£½ñ¤­½ç¤Ë¥½¡¼¥È
     return sort { $a->[0] <=> $b->[0] || $b->[1] <=> $a->[1] } @rectangles;
 }
 
@@ -322,6 +328,63 @@ sub _select_rect {
 	} else {
 	    return "<!-- out of boundary -->";
 	}
+    }
+    return "<!-- no match -->";
+}
+
+sub _select_circle {
+    my ($circle, $region, $blshift) = @_;
+    my ($minx, $miny, $maxx, $maxy) = ($region->[0], $region->[1],
+                       $region->[0] + $region->[2],
+                       $region->[1] + $region->[3]);
+    if ($circle =~ m/<\s*CIRCLE\b[^>]*>/s) {
+    my $x = _get_property($circle, "cx");
+    my $y = _get_property($circle, "cy");
+    my ($X, $Y) = ($x, $y);
+    my $trans = _get_property($circle, "transform");
+    my @tmat;
+    if (defined $trans) {
+        $trans =~ s/matrix\((.*)\)/$1/;
+        @tmat = split / /, $trans;
+        ($X, $Y) = _transform($x, $y, @tmat);
+    }
+    if ($minx <= $X && $X <= $maxx && $miny <= $Y && $Y <= $maxy) {
+        my $r = _get_property($circle, "r");
+        if (!defined $trans) {
+            $x -= $minx;
+            $y -= $miny + $blshift;
+
+            # Convert <circle> to <path>
+            # http://stackoverflow.com/questions/5737975/circle-drawing-with-svgs-arc-path/1047733
+            my $rmin    = -($r);
+            my $rdbl    =  ($r * 2);
+            my $rdblmin = -($r * 2);
+            my $pathd = "";
+            $pathd .= "M$x,$y";
+            $pathd .= "m$rmin,0";
+            $pathd .= "a$r,$r 0 1,1 $rdbl,0";
+            $pathd .= "a$r,$r 0 1,1 $rdblmin,0";
+            return "<path d=\"$pathd\"/>";
+            # return "<circle cx=\"$x\" cy=\"$y\" r=\"$r\" />";
+        } else {
+            $tmat[4] -= $minx;
+            $tmat[5] -= $miny + $blshift;
+
+            # Convert <circle> to <path>
+            my $rmin    = -($r);
+            my $rdbl    =  ($r * 2);
+            my $rdblmin = -($r * 2);
+            my $pathd = "";
+            $pathd .= "M$x,$y";
+            $pathd .= "m$rmin,0";
+            $pathd .= "a$r,$r 0 1,1 $rdbl,0";
+            $pathd .= "a$r,$r 0 1,1 $rdblmin,0";
+            return "<path d=\"$pathd\" transform=\"matrix(@tmat)\"/>";
+            # return "<cirlce cx=\"$x\" cy=\"$y\" r=\"$r\"  transform=\"matrix(@tmat)\"/>";
+        }
+    } else {
+        return "<!-- out of boundary -->";
+    }
     }
     return "<!-- no match -->";
 }

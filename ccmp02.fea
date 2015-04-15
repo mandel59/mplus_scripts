@@ -782,6 +782,9 @@ lookup ccmplookup02 {
     sub \y \hookabovecomb by \uni1EF7; # LATIN SMALL LETTER Y WITH HOOK ABOVE
     sub \Y \tildecomb by \uni1EF8; # LATIN CAPITAL LETTER Y WITH TILDE
     sub \y \tildecomb by \uni1EF9; # LATIN SMALL LETTER Y WITH TILDE
+
+    sub \uni02E5 \uni02E9 by \uni02E5_uni02E9; # MODIFIER LETTER EXTRA-HIGH EXTRA-LOW CONTOUR TONE BAR
+    sub \uni02E9 \uni02E5 by \uni02E9_uni02E5; # MODIFIER LETTER EXTRA-LOW EXTRA-HIGH CONTOUR TONE BAR
 } ccmplookup02;
 
 lookup SingleSubstitutionlookupDotless {
@@ -813,6 +816,10 @@ lookup ccmplookup03 {
 } ccmplookup03;
 
 feature ccmp {
+  script DFLT;
+     language dflt ;
+      lookup ccmplookup02;
+      lookup ccmplookup03;
   script cyrl;
      language dflt ;
       lookup ccmplookup02;
