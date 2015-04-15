@@ -227,7 +227,7 @@ sub _get_property {
     }
 }
 
-# frame (ÅÉ¤ê¤Ä¤Ö¤·¤Î¤Ê¤¤ rect) ¤Î°ìÍ÷¤ò³ÍÆÀ
+# returns the list of the frames (rect fill=none)
 sub _get_frames {
     my @rectangles;
     my $svg = $_[0];
@@ -240,7 +240,7 @@ sub _get_frames {
 		     _get_property($rect, "height"));
 	push(@rectangles, \@array);
     }
-    # ²£½ñ¤­½ç¤Ë¥½¡¼¥È
+    # sort by horizontal ordering
     return sort { $a->[0] <=> $b->[0] || $b->[1] <=> $a->[1] } @rectangles;
 }
 
