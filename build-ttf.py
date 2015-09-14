@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import math
 import sys
 import os
@@ -9,7 +10,7 @@ import config
 fontforge.setPrefs('CoverageFormatsAllowed', 1)
 
 ttfname = sys.argv[1]
-fontname, weight = os.path.splitext(ttfname)[0].rsplit('-', 1)
+middlefamily, weight = os.path.splitext(ttfname)[0].split('-')[1:]
 modules = sys.argv[2:]
 
 ascent = 860
@@ -250,31 +251,36 @@ def set_kernings(mod):
         fp.close()
 
 def set_fontnames():
-    family = 'M+ ' + fontname[6:]
+    family = '%s %s' % (config.family, middlefamily)
     if weight in ('black', 'heavy', 'bold'):
         subfamily = 'Bold'
     else:
         subfamily = 'Regular'
+    postscript = '%s-%s-%s' % (config.postscript, middlefamily, weight)
     fullname = ("%s %s" % (family, weight))
-    copyright = "Copyright(c) %s M+ FONTS PROJECT" % config.year
-    f.fontname = '%s-%s' % (fontname, weight)
+    copyright = "Copyright(c) %s %s" % (config.year, config.author)
+    f.fontname = postscript
     f.familyname = family
     f.fullname = fullname
     f.weight = weight
     f.copyright = copyright
     f.version = config.version
-    f.sfnt_names = (
+    sfnt_names = [
         ('English (US)', 'Copyright', copyright),
         ('English (US)', 'Family', fullname),
         ('English (US)', 'SubFamily', subfamily),
         ('English (US)', 'Fullname', fullname),
         ('English (US)', 'Version', 'Version %s' % config.version),
-        ('English (US)', 'PostScriptName', '%s-%s' % (fontname, weight)),
-        ('English (US)', 'Vendor URL', 'http://mplus-fonts.sourceforge.jp'),
+        ('English (US)', 'PostScriptName', postscript),
+        ('English (US)', 'Vendor URL', config.url),
         ('Japanese', 'Preferred Family', family),
         ('English (US)', 'Preferred Family', family),
         ('Japanese', 'Preferred Styles', weight),
-        ('English (US)', 'Preferred Styles', weight),)
+        ('English (US)', 'Preferred Styles', weight),
+    ]
+    for k, v in config.license.items():
+        sfnt_names.append((k, 'License', v))
+    f.sfnt_names = tuple(sfnt_names)
 
 def set_os2_value():
     panose = [2, 11, 0, 2, 2, 2, 3, 2, 2, 7]
@@ -283,7 +289,7 @@ def set_os2_value():
         panose[3] = 3
     else:
         panose[3] = 2
-    if fontname[7] == 'm':
+    if middlefamily[1:] == 'm':
         panose[3] = 9
         f.os2_family_class = 8 * 256 + 9
     else:
@@ -301,7 +307,7 @@ def set_os2_value():
     f.hhea_linegap = 90
 
 def merge_features():
-    if fontname[7] != 'm':
+    if middlefamily[1:] != 'm':
         f.mergeFeature('ligature01.fea')
         f.mergeFeature('mark01.fea')
     f.mergeFeature('ccmp01.fea')
@@ -487,7 +493,7 @@ f.descent = descent
 
 kanji_flag = False
 if 'kanji' in modules:
-    kfontname = fontname[:7]
+    kfontname = 'mplus-' + middlefamily[0]
     if modules[0] == 'kanji':
         kanji_flag = True
         moddir = '../../../splitted/%s/%s' % (weight, 'kanji')
@@ -555,4 +561,3 @@ if kanji_flag:
     open(ttfname, 'w').close()
 else:
     f.generate(ttfname, '', ('short-post', 'opentype', 'PfEd-lookups'))
-
