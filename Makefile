@@ -133,7 +133,7 @@ split-svgs: dirs
 	perl -I $(SCRIPTS) $(SCRIPTS)/split-svg.pl $(SPLIT_CONCURRENCY) ${SVGFILES}
 
 clean:
-	@rm -rf work.d/ release/mplus-* *~ 
+	@rm -rf work.d/ release/mplus-* *~
 
 clean-targets:
 	@rm -rf work.d/targets/
