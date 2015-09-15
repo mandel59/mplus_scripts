@@ -41,7 +41,7 @@ KANJI2:=
 endif
 
 all:
-	@($(MAKE) split-svgs ; $(MAKE) rebuild-ttf)
+	@($(MAKE) svg.d && $(MAKE) split-svgs && $(MAKE) rebuild-ttf)
 
 ttf: mplus-1p mplus-2p mplus-1m mplus-2m mplus-1c mplus-2c mplus-1mn # mplus-2mn
 
@@ -143,3 +143,8 @@ rebuild-ttf:
 
 release: ttf
 	@(cd release ; $(MAKE) )
+
+svg.d:
+	cvs -d:pserver:anonymous@cvs.osdn.jp:/cvsroot/mplus-fonts login
+	cvs -z8 -d:pserver:anonymous@cvs.osdn.jp:/cvsroot/mplus-fonts co mplus_outline_fonts/svg.d
+	ln -s mplus_outline_fonts/svg.d svg.d
