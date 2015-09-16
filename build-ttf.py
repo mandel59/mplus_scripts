@@ -252,22 +252,29 @@ def set_kernings(mod):
 
 def set_fontnames():
     family = '%s %s' % (config.family, middlefamily)
-    if weight in ('black', 'heavy', 'bold'):
+    if weight == 'bold':
         subfamily = 'Bold'
     else:
         subfamily = 'Regular'
     postscript = '%s-%s-%s' % (config.postscript, middlefamily, weight)
-    fullname = ("%s %s" % (family, weight))
+    if weight in ('regular', 'bold'):
+        styling_group = family
+    else:
+        styling_group = ("%s %s" % (family, weight))
+    if weight == 'regular':
+        fullname = family
+    else:
+        fullname = ("%s %s" % (family, weight))
     copyright = "Copyright(c) %s %s" % (config.year, config.author)
     f.fontname = postscript
-    f.familyname = family
+    f.familyname = styling_group
     f.fullname = fullname
-    f.weight = weight
+    f.weight = subfamily
     f.copyright = copyright
     f.version = config.version
     sfnt_names = [
         ('English (US)', 'Copyright', copyright),
-        ('English (US)', 'Family', fullname),
+        ('English (US)', 'Family', styling_group),
         ('English (US)', 'SubFamily', subfamily),
         ('English (US)', 'Fullname', fullname),
         ('English (US)', 'Version', 'Version %s' % config.version),
@@ -281,8 +288,6 @@ def set_fontnames():
     for k, v in config.license.items():
         sfnt_names.append((k, 'License', v))
     f.sfnt_names = tuple(sfnt_names)
-
-def set_os2_value():
     panose = [2, 11, 0, 2, 2, 2, 3, 2, 2, 7]
     panose[2] = 9 - weights_position[weight]
     if weight in ('light', 'thin'):
@@ -294,8 +299,17 @@ def set_os2_value():
         f.os2_family_class = 8 * 256 + 9
     else:
         f.os2_family_class = 8 * 256 + 6
+    f.os2_weight = {
+        "black": 900,
+        "heavy": 800,
+        "bold": 700,
+        "medium": 500,
+        "regular": 400,
+        "light": 300,
+        "thin": 100,
+    }[weight]
     f.os2_panose = tuple(panose)
-    f.os2_vendor = 'M+  '
+    f.os2_vendor = config.os2_vendor
     f.os2_winascent_add = 0
     f.os2_windescent_add = 0
     f.hhea_ascent_add = 0
@@ -554,7 +568,6 @@ else:
 
 set_alt_tables()
 set_fontnames()
-set_os2_value()
 
 if kanji_flag:
     f.save('%sk-%s.sfd' % (kfontname, weight))
