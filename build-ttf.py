@@ -255,13 +255,13 @@ def set_fontnames():
     if weight == 'bold':
         subfamily = 'Bold'
         try:
-            f.stylemap = int('0000100000', 2) # bold
+            f.os2_stylemap = int('0000100000', 2) # bold
         except Exception as message:
             print(message)
     else:
         subfamily = 'Regular'
         try:
-            f.stylemap = int('0001000000', 2) # regular
+            f.os2_stylemap = int('0001000000', 2) # regular
         except Exception as message:
             print(message)
     postscript = '%s-%s-%s' % (config.postscript, middlefamily, weight)
