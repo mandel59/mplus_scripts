@@ -532,17 +532,6 @@ if 'kanji' in modules:
             % (kfontname, weight, kfontname, weight))
     modules.remove('kanji')
 
-
-# import SVG files in each module
-f.selection.none()
-for mod in modules:
-    moddir = '../../../splitted/%s/%s' % (weight, mod)
-    import_svgs(moddir)
-
-f.selection.all()
-f.removeOverlap()
-f.round()
-
 # add lookups
 if kanji_flag:
     f.addLookup('jis2004', 'gsub_single', (), (
@@ -566,6 +555,8 @@ else:
         ("liga", (("DFLT", ("dflt",)), ("kana", ("JAN ", "dflt")),))))
     f.addLookupSubtable('kana semi-voiced lookup', 'kana semi-voiced table')
     for mod in modules:
+        moddir = '../../../splitted/%s/%s' % (weight, mod)
+        import_svgs(moddir)
         set_bearings(mod)
         set_kernings(mod)
         set_vert_chars(mod)
@@ -576,6 +567,10 @@ else:
 
 set_alt_tables()
 set_fontnames()
+
+f.selection.all()
+f.removeOverlap()
+f.round()
 
 if kanji_flag:
     f.save('%sk-%s.sfd' % (kfontname, weight))
