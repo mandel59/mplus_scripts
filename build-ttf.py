@@ -314,7 +314,7 @@ def set_fontnames():
         "medium": 500,
         "regular": 400,
         "light": 300,
-        "thin": 250,
+        "thin": 100,
     }[weight]
     f.os2_panose = tuple(panose)
     f.os2_vendor = config.os2_vendor
