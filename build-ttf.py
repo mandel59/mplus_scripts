@@ -296,14 +296,34 @@ def set_fontnames():
     for k, v in config.license.items():
         sfnt_names.append((k, 'License', v))
     f.sfnt_names = tuple(sfnt_names)
-    panose = [2, 11, 0, 2, 2, 2, 3, 2, 2, 7]
-    panose[2] = 9 - weights_position[weight]
-    if weight in ('light', 'thin'):
-        panose[3] = 3
+    panose = [
+        2, # 0-Family Kind: 2-Latin Text
+        11, # 1-Serif Style: 11-Normal Sans
+        0, # 2-Weight
+        3, # 3-Proportion: 3-Modern
+        2, # 4-Contrast: 2-None
+        2, # 5-Stroke Variation: 2-No Variation
+        3, # 6-Arm Style: 3-Straight Arms/Wedge
+        2, # 7-Letterform: 2-Normal/Contact
+        2, # 8-Midline: 2-Standard
+        4, # 9-X-height: 4-Constant/Large
+    ]
+    panose[2] = {
+        "black": 8,
+        "heavy": 8,
+        "bold": 7,
+        "medium": 6,
+        "regular": 5,
+        "light": 4,
+        "thin": 2,
+    }[weight]
+    if middlefamily[1:] == 'p':
+        if weight in ('light', 'thin'):
+            panose[3] = 2 # 3-Proportion: 2-Old Style
     else:
-        panose[3] = 2
+        panose[6] = 4 # 6-Arm Style: 4-Straight Arms/Vertical
     if middlefamily[1:] == 'm':
-        panose[3] = 9
+        panose[3] = 9 # 3-Proportion: 9-Monospace
         f.os2_family_class = 8 * 256 + 9
     else:
         f.os2_family_class = 8 * 256 + 6
