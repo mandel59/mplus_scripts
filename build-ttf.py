@@ -13,6 +13,8 @@ ttfname = sys.argv[1]
 middlefamily, weight = os.path.splitext(ttfname)[0].split('-')[1:]
 modules = sys.argv[2:]
 
+is_monospace = middlefamily[1] == 'm'
+
 ascent = 860
 descent = 140
 em = ascent + descent
@@ -322,7 +324,7 @@ def set_fontnames():
             panose[3] = 2 # 3-Proportion: 2-Old Style
     else:
         panose[6] = 4 # 6-Arm Style: 4-Straight Arms/Vertical
-    if middlefamily[1:] == 'm':
+    if is_monospace:
         panose[3] = 9 # 3-Proportion: 9-Monospace
         f.os2_family_class = 8 * 256 + 9
     else:
@@ -349,7 +351,7 @@ def set_fontnames():
     f.hhea_linegap = 90
 
 def merge_features():
-    if middlefamily[1:] != 'm':
+    if not is_monospace:
         f.mergeFeature('ligature01.fea')
         f.mergeFeature('mark01.fea')
     f.mergeFeature('ccmp01.fea')
