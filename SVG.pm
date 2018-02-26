@@ -123,7 +123,7 @@ sub modtime {
 sub splittime {
     my $this = shift;
     my @stat = stat($this->{logfilename});
-    if (defined @stat) {
+    if (@stat) {
 	return $stat[9];
     } else {
 	return 0;
