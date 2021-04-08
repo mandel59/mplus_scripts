@@ -13,7 +13,14 @@ WEIGHT:=	%%WEIGHT%%
 
 SCRIPTS=	ligature01.fea ccmp01.fea ccmp02.fea mark01.fea mplus.sfd
 
+ttf: ${FONTNAME_BASE}-${WEIGHT}.ttf
+
+otf: ${FONTNAME_BASE}-${WEIGHT}.otf
+
 ${FONTNAME_BASE}-${WEIGHT}.ttf: build-ttf.py $(SCRIPTS)
+	fontforge -script build-ttf.py $@ $(MODULES)
+
+${FONTNAME_BASE}-${WEIGHT}.otf: build-ttf.py $(SCRIPTS)
 	fontforge -script build-ttf.py $@ $(MODULES)
 
 build-ttf.py: ../../../../scripts/build-ttf.py

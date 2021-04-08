@@ -16,6 +16,12 @@ all:: $(MAKEFILES)
 	(cd $$i && $(MAKE)) ;\
 	done
 
+otf: $(MAKEFILES)
+	for i in $(SUBDIRS) ;\
+	do \
+	(cd $$i && $(MAKE) otf) ;\
+	done
+
 black/Makefile: ${TEMPLATE}
 	sed '${COMMON_SUBST};s/%%WEIGHT%%/black/g' ${TEMPLATE} > $@
 
