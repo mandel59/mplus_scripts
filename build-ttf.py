@@ -141,7 +141,7 @@ def set_bearings(mod):
                 continue
             position = weights_position[weight] * 2
             splitted = line.split()
-            charspaces = map(int, splitted[position:position + 2])
+            charspaces = list(map(int, splitted[position:position + 2]))
             break
         fp.close()
     else:
