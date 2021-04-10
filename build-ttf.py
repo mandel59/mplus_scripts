@@ -115,13 +115,13 @@ def set_bearings_line(line, charspaces):
     m = bearings_format.match(bearings[0])
     bearing = int(m.group(2))
     if m.group(1) == '+':
-        c.left_side_bearing = c.left_side_bearing + bearing
+        c.left_side_bearing = int(c.left_side_bearing) + bearing
     else:
         c.left_side_bearing = bearing + l
     m = bearings_format.match(bearings[1])
     bearing = int(m.group(2))
     if m.group(1) == '+':
-        c.right_side_bearing = c.right_side_bearing + bearing
+        c.right_side_bearing = int(c.right_side_bearing) + bearing
     elif m.group(1) == 'w':
         c.width = bearing
     else:
