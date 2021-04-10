@@ -3,6 +3,7 @@ import math
 import sys
 import os
 import re
+import traceback
 import psMat
 import fontforge
 import config
@@ -59,10 +60,11 @@ def import_svg(svgpath, svgfile):
 def import_svgs(svgdir):
     for svgfile in os.listdir(svgdir):
         try:
-            import_svg(svgdir, svgfile)
+            if svgfile != '.svg' and svgfile.endswith('.svg'):
+                import_svg(svgdir, svgfile)
         except Exception as message:
-            #print(message)
-            pass
+            print(message)
+            print(traceback.format_exc())
 
 def import_kanji(moddir):
     for svgdir in os.listdir(moddir):
@@ -157,6 +159,7 @@ def set_bearings(mod):
                 set_bearings_line(line, charspaces)
             except Exception as message:
                 print(bearings_path, "line:", line_count)
+                print(traceback.format_exc())
                 print(message)
         fp.close()
 
@@ -217,6 +220,7 @@ def set_vert_chars(mod):
                 set_vbearings_line(line)
             except Exception as message:
                 print(vbearings_path, "line:", line_count)
+                print(traceback.format_exc())
                 print(message)
         fp.close()
 
@@ -249,6 +253,7 @@ def set_kernings(mod):
                 set_kernings_line(line)
             except Exception as message:
                 print(kernings_path, "line:", line_count)
+                print(traceback.format_exc())
                 print(message)
         fp.close()
 
@@ -260,12 +265,14 @@ def set_fontnames():
             f.os2_stylemap = int('0000100000', 2) # bold
         except Exception as message:
             print(message)
+            print(traceback.format_exc())
     else:
         subfamily = 'Regular'
         try:
             f.os2_stylemap = int('0001000000', 2) # regular
         except Exception as message:
             print(message)
+            print(traceback.format_exc())
     postscript = '%s-%s-%s' % (config.postscript, middlefamily, weight)
     if weight in ('regular', 'bold'):
         styling_group = family
@@ -382,6 +389,7 @@ def set_ccmp():
         except Exception as message:
             print(t)
             print(message)
+            print(traceback.format_exc())
 
 def set_alt_tables():
     tag_table = {
@@ -525,6 +533,7 @@ def set_kanji_altuni():
                     except Exception as message:
                         print(altuni_path, line_count)
                         print(message)
+                        print(traceback.format_exc())
                         print(alts)
             fp.close()
 
